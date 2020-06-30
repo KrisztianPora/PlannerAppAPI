@@ -18,6 +18,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PlannerAppAPI.Data;
 using PlannerAppAPI.Models;
+using PlannerAppAPI.Services;
 
 namespace PlannerAppAPI
 {
@@ -69,6 +70,9 @@ namespace PlannerAppAPI
 
             // Swagger generator
             services.AddSwaggerGen();
+
+            // User Service
+            services.AddScoped<IUserService, UserService>();
 
             services.AddControllers();
 
