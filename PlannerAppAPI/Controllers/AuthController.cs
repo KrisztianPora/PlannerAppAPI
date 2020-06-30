@@ -22,8 +22,8 @@ namespace PlannerAppAPI.Controllers
 
         // /api/auth/register
         [HttpPost("Register")]
-        [ProducesResponseType(200, Type=typeof(UserManagerResponse))]
-        [ProducesResponseType(400, Type=typeof(UserManagerResponse))]
+        [ProducesResponseType(200, Type = typeof(UserManagerResponse))]
+        [ProducesResponseType(400, Type = typeof(UserManagerResponse))]
         public async Task<IActionResult> RegisterAsync([FromBody]RegisterRequest registerRequest)
         {
             if (ModelState.IsValid)
@@ -40,7 +40,32 @@ namespace PlannerAppAPI.Controllers
 
             return BadRequest(new UserManagerResponse
             {
-                Message = "Model state invalid",
+                Message = "There are invalid values",
+                IsSuccess = false,
+            }); // Status code: 400
+        }
+
+        // /api/auth/login
+        [HttpPost("Login")]
+        [ProducesResponseType(200, Type = typeof(UserManagerResponse))]
+        [ProducesResponseType(400, Type = typeof(UserManagerResponse))]
+        public async Task<IActionResult> LoginAsync([FromBody]LoginRequest loginRequest)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _userService.LoginUserAsync(loginRequest);
+
+                if (result.IsSuccess)
+                {
+                    return Ok(result); // Status code: 200
+                }
+
+                return BadRequest(result);
+            }
+
+            return BadRequest(new UserManagerResponse
+            {
+                Message = "There are invalid values",
                 IsSuccess = false,
             }); // Status code: 400
         }
