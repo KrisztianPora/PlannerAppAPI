@@ -74,6 +74,9 @@ namespace PlannerAppAPI
             // User Service
             services.AddScoped<IUserService, UserService>();
 
+            // SendGrid Email Service
+            services.AddTransient<IMailService, SendGridMailService>();
+
             services.AddControllers();
 
             services.Configure<ApiBehaviorOptions>(options =>

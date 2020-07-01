@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -17,11 +18,13 @@ namespace PlannerAppAPI.Services
     {
         private UserManager<ApplicationUser> _userManager;
         private IConfiguration _configuration;
+        private IMailService _mailService;
 
-        public UserService(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+        public UserService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IMailService mailService)
         {
             _userManager = userManager;
             _configuration = configuration;
+            _mailService = mailService;
         }
 
         public async Task<UserManagerResponse> RegisterUserAsync(RegisterRequest registerRequest)
@@ -52,6 +55,15 @@ namespace PlannerAppAPI.Services
 
             if (result.Succeeded)
             {
+                var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(applicationUser);
+                var encodedEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+                var validEmailToken = WebEncoders.Base64UrlEncode(encodedEmailToken);
+
+                string url = $"{_configuration["AppUrl"]}/api/auth/confirmemail?userid={applicationUser.Id}&token={validEmailToken}";
+
+                await _mailService.SendEmailAsync(applicationUser.Email, "Email confirmation", $"<h1>Welcome to PlannerApp!</h1>" +
+                    $"<p>Please confirm your email by <a href='{url}'>clicking here.</a></p>");
+
                 return new UserManagerResponse
                 {
                     Message = "User creation successful",
@@ -115,6 +127,40 @@ namespace PlannerAppAPI.Services
                 Message = tokenAsString,
                 IsSuccess = true,
                 ExpireDate = token.ValidTo
+            };
+        }
+
+        public async Task<UserManagerResponse> ConfirmEmailAsync(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new UserManagerResponse
+                {
+                    Message = "User not found",
+                    IsSuccess = false,
+                };
+            }
+
+            var decodedToken = WebEncoders.Base64UrlDecode(token);
+            string normalToken = Encoding.UTF8.GetString(decodedToken);
+
+            var result = await _userManager.ConfirmEmailAsync(user, normalToken);
+
+            if (result.Succeeded)
+            {
+                return new UserManagerResponse
+                {
+                    Message = "Email confirmation successful",
+                    IsSuccess = true,
+                };
+            }
+
+            return new UserManagerResponse
+            {
+                Message = "Email confirmation failed",
+                IsSuccess = false,
+                Errors = result.Errors.Select(e => e.Description)
             };
         }
     }

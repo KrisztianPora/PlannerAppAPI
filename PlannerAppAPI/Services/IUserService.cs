@@ -9,7 +9,7 @@ namespace PlannerAppAPI.Services
     public interface IUserService
     {
         Task<UserManagerResponse> RegisterUserAsync(RegisterRequest registerRequest);
-
         Task<UserManagerResponse> LoginUserAsync(LoginRequest loginRequest);
+        Task<UserManagerResponse> ConfirmEmailAsync(string userId, string token);
     }
 }
