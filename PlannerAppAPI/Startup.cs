@@ -74,6 +74,12 @@ namespace PlannerAppAPI
             // User Service
             services.AddScoped<IUserService, UserService>();
 
+            // Plan Service
+            services.AddTransient<IPlanService, PlanService>();
+
+            // Item Service
+            services.AddTransient<IItemService, ItemService>();
+
             // SendGrid Email Service
             services.AddTransient<IMailService, SendGridMailService>();
 
@@ -108,6 +114,8 @@ namespace PlannerAppAPI
             });
 
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
 
             app.UseRouting();
 

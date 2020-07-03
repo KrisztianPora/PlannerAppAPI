@@ -76,16 +76,12 @@ namespace PlannerAppAPI.Controllers
         [HttpGet("ConfirmEmail")]
         [ProducesResponseType(200, Type = typeof(UserManagerResponse))]
         [ProducesResponseType(400, Type = typeof(UserManagerResponse))]
-        [ProducesResponseType(404, Type = typeof(UserManagerResponse))]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
             {
-                return NotFound(new UserManagerResponse
-                {
-                    Message = "User or token not found",
-                    IsSuccess = false,
-                }); // Status code: 404
+                return NotFound(); // Status code: 404
             }
 
             var result = await _userService.ConfirmEmailAsync(userId, token);
@@ -102,16 +98,12 @@ namespace PlannerAppAPI.Controllers
         [HttpPost("ForgetPassword")]
         [ProducesResponseType(200, Type = typeof(UserManagerResponse))]
         [ProducesResponseType(400, Type = typeof(UserManagerResponse))]
-        [ProducesResponseType(404, Type = typeof(UserManagerResponse))]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> ForgetPassword(string email)
         {
             if (string.IsNullOrEmpty(email))
             {
-                return NotFound(new UserManagerResponse
-                {
-                    Message = "There is no account associated with that Email address",
-                    IsSuccess = false,
-                }); // Status code: 404
+                return NotFound(); // Status code: 404
             }
 
             var result = await _userService.ForgetPasswordAsync(email);
