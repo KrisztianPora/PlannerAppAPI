@@ -59,7 +59,6 @@ namespace PlannerAppAPI.Controllers
 
                 if (result.IsSuccess)
                 {
-                    //await _mailService.SendEmailAsync(loginRequest.Email, "New login", "<h1>PlannerApp Login</h1><p>Welcome to PlannerApp!</p>");
                     return Ok(result); // Status code: 200
                 }
 
@@ -75,6 +74,9 @@ namespace PlannerAppAPI.Controllers
 
         // /api/auth/confirmemail?userid&token
         [HttpGet("ConfirmEmail")]
+        [ProducesResponseType(200, Type = typeof(UserManagerResponse))]
+        [ProducesResponseType(400, Type = typeof(UserManagerResponse))]
+        [ProducesResponseType(404, Type = typeof(UserManagerResponse))]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
@@ -94,6 +96,55 @@ namespace PlannerAppAPI.Controllers
             }
 
             return BadRequest(result); // Status code: 400
+        }
+
+        // /api/auth/forgetpassword
+        [HttpPost("ForgetPassword")]
+        [ProducesResponseType(200, Type = typeof(UserManagerResponse))]
+        [ProducesResponseType(400, Type = typeof(UserManagerResponse))]
+        [ProducesResponseType(404, Type = typeof(UserManagerResponse))]
+        public async Task<IActionResult> ForgetPassword(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return NotFound(new UserManagerResponse
+                {
+                    Message = "There is no account associated with that Email address",
+                    IsSuccess = false,
+                }); // Status code: 404
+            }
+
+            var result = await _userService.ForgetPasswordAsync(email);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result); // Status code: 200
+            }
+
+            return BadRequest(result); // Status code: 400
+        }
+
+        // /api/auth/resetpassword
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword([FromForm]ResetPasswordRequest resetPasswordRequest)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _userService.ResetPasswordAsync(resetPasswordRequest);
+
+                if (result.IsSuccess)
+                {
+                    return Ok(result); // Status code: 200
+                }
+
+                return BadRequest(result);
+            }
+
+            return BadRequest(new UserManagerResponse
+            {
+                Message = "There are invalid values",
+                IsSuccess = false,
+            }); // Status code: 400
         }
     }
 }

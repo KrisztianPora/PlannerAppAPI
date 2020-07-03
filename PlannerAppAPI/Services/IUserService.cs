@@ -11,5 +11,7 @@ namespace PlannerAppAPI.Services
         Task<UserManagerResponse> RegisterUserAsync(RegisterRequest registerRequest);
         Task<UserManagerResponse> LoginUserAsync(LoginRequest loginRequest);
         Task<UserManagerResponse> ConfirmEmailAsync(string userId, string token);
+        Task<UserManagerResponse> ForgetPasswordAsync(string email);
+        Task<UserManagerResponse> ResetPasswordAsync(ResetPasswordRequest resetPasswordViewModel);
     }
 }

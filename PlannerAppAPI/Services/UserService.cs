@@ -62,7 +62,7 @@ namespace PlannerAppAPI.Services
                 string url = $"{_configuration["AppUrl"]}/api/auth/confirmemail?userid={applicationUser.Id}&token={validEmailToken}";
 
                 await _mailService.SendEmailAsync(applicationUser.Email, "Email confirmation", $"<h1>Welcome to PlannerApp!</h1>" +
-                    $"<p>Please confirm your email by <a href='{url}'>clicking here.</a></p>");
+                    $"<p>To confirm your email, <a href='{url}'>Click here</a></p>");
 
                 return new UserManagerResponse
                 {
@@ -161,6 +161,77 @@ namespace PlannerAppAPI.Services
                 Message = "Email confirmation failed",
                 IsSuccess = false,
                 Errors = result.Errors.Select(e => e.Description)
+            };
+        }
+
+        public async Task<UserManagerResponse> ForgetPasswordAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return new UserManagerResponse
+                {
+                    Message = "There is no account associated with that Email address",
+                    IsSuccess = false,
+                };
+            }
+
+            var passwordResetTtoken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedPasswordResetToken = Encoding.UTF8.GetBytes(passwordResetTtoken);
+            var validPasswordResetToken = WebEncoders.Base64UrlEncode(encodedPasswordResetToken);
+
+            string url = $"{_configuration["AppUrl"]}/ResetPassword?email={email}&token={validPasswordResetToken}";
+
+            await _mailService.SendEmailAsync(email, "Reset Password", "<h1>PlannerApp - Password Reset</h1>" +
+                $"<p>To reset your password, <a href={url}>Click here</a></p>");
+
+            return new UserManagerResponse
+            {
+                Message = "Reset Password email sent successfully",
+                IsSuccess = true,
+            };
+        }
+
+        public async Task<UserManagerResponse> ResetPasswordAsync(ResetPasswordRequest resetPasswordRequest)
+        {
+            var user = await _userManager.FindByEmailAsync(resetPasswordRequest.Email);
+            if (user == null)
+            {
+                return new UserManagerResponse
+                {
+                    Message = "There is no account associated with that Email address",
+                    IsSuccess = false,
+                };
+            }
+
+            if (resetPasswordRequest.NewPassword != resetPasswordRequest.ConfirmPassword)
+            {
+                return new UserManagerResponse
+                {
+                    Message = "Confirm password does not match the password",
+                    IsSuccess = false,
+                };
+            }
+
+            var decodedToken = WebEncoders.Base64UrlDecode(resetPasswordRequest.Token);
+            string normalToken = Encoding.UTF8.GetString(decodedToken);
+
+            var result = await _userManager.ResetPasswordAsync(user, normalToken, resetPasswordRequest.NewPassword);
+
+            if (result.Succeeded)
+            {
+                return new UserManagerResponse
+                {
+                    Message = "Password reset successful",
+                    IsSuccess = true,
+                };
+            }
+
+            return new UserManagerResponse
+            {
+                Message = "Password reset failed",
+                IsSuccess = false,
+                Errors = result.Errors.Select(e => e.Description),
             };
         }
     }
