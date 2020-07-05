@@ -83,6 +83,15 @@ namespace PlannerAppAPI
             // SendGrid Email Service
             services.AddTransient<IMailService, SendGridMailService>();
 
+            // CORS Protocol
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", policy =>
+                {
+                    policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                });
+            });
+
             services.Configure<DataProtectionTokenProviderOptions>(options =>
             {
                 options.TokenLifespan = TimeSpan.FromHours(3);
@@ -122,6 +131,8 @@ namespace PlannerAppAPI
             app.UseAuthentication();
 
             app.UseAuthorization();
+
+            app.UseCors("CorsPolicy");
 
             app.UseEndpoints(endpoints =>
             {
