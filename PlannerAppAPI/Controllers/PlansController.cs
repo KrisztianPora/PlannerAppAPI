@@ -67,7 +67,7 @@ namespace PlannerAppAPI.Controllers
         }
 
         [ProducesResponseType(200, Type = typeof(CollectionPagingResponse<Plan>))]
-        [HttpGet("query={query}")]
+        [HttpGet("search")]
         public IActionResult Get(string query, int page)
         {
             string userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
@@ -76,7 +76,7 @@ namespace PlannerAppAPI.Controllers
             {
                 page = 1;
             }
-            var plans = _planService.GetAllPlans(PAGE_SIZE, page, userId, out totalPlans);
+            var plans = _planService.SearchPlans(query, PAGE_SIZE, page, userId, out totalPlans);
 
             int totalPages = 0;
             if (totalPlans % PAGE_SIZE == 0)
