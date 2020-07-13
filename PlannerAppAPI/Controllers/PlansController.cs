@@ -19,7 +19,7 @@ namespace PlannerAppAPI.Controllers
     {
         private readonly IPlanService _planService;
         private readonly IConfiguration _configuration;
-        private const int PAGE_SIZE = 10;
+        private const int PAGE_SIZE = 8;
 
         public PlansController(IPlanService planService, IConfiguration configuration)
         {
